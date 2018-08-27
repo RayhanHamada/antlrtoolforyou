@@ -63,11 +63,9 @@ public class Controller implements Initializable{
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER) submitToRuntime();
 				else if(event.getCode() == KeyCode.UP) getPreviousCommand();
+				else if (event.getCode() == KeyCode.DOWN) getNextCommand();
 			}
 		});
-		
-		
-
 	}
 	
 	
@@ -310,15 +308,21 @@ public class Controller implements Initializable{
 	{
 		curCommandIndex++;
 		
-		if (previousCommand.isEmpty())
+		if (curCommandIndex < previousCommand.size())
+		{
+			txtCommand.setText(previousCommand.get(curCommandIndex));
+		}
+		else if (previousCommand.size() == 0)
 		{
 			curCommandIndex--;
 			txtCommand.setText(previousCommand.get(curCommandIndex));
 		}
-		else if (!previousCommand.isEmpty())
+		else if (curCommandIndex >= previousCommand.size())
 		{
-			
+			curCommandIndex--;
+			txtCommand.setText(previousCommand.get(curCommandIndex));
 		}
+		System.out.println(curCommandIndex);
 	}
 	
 	@FXML public void submitToRuntime()
