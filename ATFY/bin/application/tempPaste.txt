@@ -64,3 +64,25 @@ File pathInput = new File(txtCwd.getText() + "\\" + txtFileName.getText());
 			dynamicValidator();
 			return false;
 		}
+		
+		
+try
+		{
+			rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -gui " + textInput, null, new File(cwd));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+
+try
+		{
+			rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -tree" + textInput, null, new File(cwd));
+		}
+		catch (Exception e)
+		{
+			
+		}
+		
+		

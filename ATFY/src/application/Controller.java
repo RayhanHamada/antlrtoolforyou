@@ -1,9 +1,15 @@
 package application;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+
+import com.sun.xml.internal.bind.v2.model.impl.RuntimeModelBuilder;
+
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -78,16 +84,20 @@ public class Controller implements Initializable{
 		{
 			cwdValidator.setText("Path is valid");
 			cwdValidator.setStyle("-fx-text-fill: green;");
-			isGrammarValid();
-			isInputValid();
+			if (!txtGrammar.getText().trim().equals(""))
+				isGrammarValid();
+			if (!txtFileName.getText().trim().equals(""))
+				isInputValid();
 			return true;
 		}
 		else
 		{
 			cwdValidator.setText("Path is invalid !");
 			cwdValidator.setStyle("-fx-text-fill: red;");
-			isGrammarValid();
-			isInputValid();
+			if (!txtGrammar.getText().trim().equals(""))
+				isGrammarValid();
+			if (!txtFileName.getText().trim().equals(""))
+				isInputValid();
 			return false;
 		}	
 	}
@@ -95,8 +105,7 @@ public class Controller implements Initializable{
 	@FXML public boolean isGrammarValid()
 	{
 		getData();
-		File pathCwd = new File(cwd);
-		File pathGram = new File(cwd + "\\" + grammarName);
+		File pathGram = new File(cwd+ "\\" + grammarName);
 		
 		if (pathGram.exists() && pathGram.isFile() && pathGram.getPath().matches(".+\\.g4$") )
 		{
@@ -206,46 +215,67 @@ public class Controller implements Initializable{
 	
 	@FXML public void compileJavaFile()
 	{
-		try
+		if (!isCwdValid() || !isGrammarValid())
 		{
-			rt.exec("cmd.exe /c javac " + grammarName.substring(0, grammarName.length()-3) + "*.java", null, new File(cwd));
-			lblReport.setText("No error occured :)");
-		} 
-		catch (Exception e) 
+			lblReport.setText("Error: Field(s) are invalid, or java file(s) are not exist !");
+		}
+		else
 		{
-			e.printStackTrace();
-			lblReport.setText("Error: exception occured");
+			try
+			{
+				rt.exec("cmd.exe /c javac " + grammarName.substring(0, grammarName.length()-3) + "*.java", null, new File(cwd));
+				lblReport.setText("No error occured :)");
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+				lblReport.setText("Error: exception occured");
+			}
 		}
 		
 	}
 	
 	@FXML public void openGui()
 	{
-		try
+		if (!isCwdValid() || !isGrammarValid() || !isInputValid())
 		{
-			rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -gui " + textInput, null, new File(cwd));
+			lblReport.setText("Error: Field(s) are invalid, or input file(s) are not exist !");
 		}
-		catch (Exception e)
+		else
 		{
-			e.printStackTrace();
+			try
+			{
+				rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -gui " + textInput, null, new File(cwd));
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	@FXML public void openTree()
 	{
-		try
+		if (!isCwdValid() || !isGrammarValid() || !isInputValid())
 		{
-			rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -tree" + textInput, null, new File(cwd));
+			lblReport.setText("Error: Field(s) are invalid, or input file(s) are not exist !");
 		}
-		catch (Exception e)
+		else
 		{
-			
+			try
+			{
+				rt.exec("cmd.exe /c grun " + grammarName.substring(0, grammarName.length()-3) + " prog -tree" + textInput, null, new File(cwd));
+			}
+			catch (Exception e)
+			{
+				
+			}
 		}
 	}
 	
 	@FXML public void clearConsole()
 	{
-		taConsole.setText(">>> Console cleared, previous activity is cancelled....");
+		taConsole.setText(">>> Console cleared, previous on going activity is cancelled...");
 	}
 	
 	@FXML public void onConsoleClicked()
@@ -327,11 +357,44 @@ public class Controller implements Initializable{
 	
 	@FXML public void submitToRuntime()
 	{
+		Process proc = null;
+		String stdFromCMD, str = "";
+		try {
+			rt.exec("cmd.exe /c " + txtCommand.getText(), null, new File(""));
+		} catch (IOException e) { e.printStackTrace(); }
+		
+//		BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+//		BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+		
 		taConsole.setText(taConsole.getText() + "\n>>> "+ txtCommand.getText());
 		setPreviousCommand();
 		txtCommand.setText("");
 		
+//		try {
+//			while ((stdFromCMD = stdInput.readLine()) != null)
+//			{
+//				str = stdFromCMD;
+//			}
+//			taConsole.setText(taConsole.getText() + "\n" + str);
+//		} catch (IOException e1) { e1.printStackTrace(); }
+//		
+//		try {
+//			while ((stdFromCMD = stdError.readLine()) != null)
+//			{
+//				str = stdFromCMD;
+//			}
+//			taConsole.setText(taConsole.getText() + "\n" + str);
+//		} catch (IOException e) { e.printStackTrace(); }
+		
 	}
+	
+	@FXML public void getAllStream()
+	{
+		
+	}
+	
+	
+	
 	
 	
 	

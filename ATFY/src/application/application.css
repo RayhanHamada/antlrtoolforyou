@@ -15,6 +15,8 @@
 #basepane
 {
 	-fx-background-color: #2B2B2B;
+	-fx-border-width: 4;
+	-fx-border-color: #FF2B0A;
 }
 
 #taConsole
