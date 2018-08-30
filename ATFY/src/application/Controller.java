@@ -23,10 +23,12 @@ import javafx.scene.layout.AnchorPane;
 
 public class Controller implements Initializable{
 	
-	private String cwd, grammarName, textInput, ruleName;
+	private String cwd = "", grammarName = "", textInput = "", ruleName = "";
 	private ArrayList<String> previousCommand;
 	private int curCommandIndex = 0;
 	private Runtime rt = Runtime.getRuntime();
+	
+	private boolean isCwdSet = false, isGrammarSet = false, isInputSet = false;
 	
 	@FXML private AnchorPane apBase;
 	
@@ -62,7 +64,7 @@ public class Controller implements Initializable{
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		previousCommand = new ArrayList<>(50);
-		taConsole.setText(">>> Initializing Console...");
+		taConsole.setText(">>> Initializing Console...\n>>> ");
 		
 		txtCommand.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
@@ -268,26 +270,24 @@ public class Controller implements Initializable{
 			}
 			catch (Exception e)
 			{
-				
+				e.printStackTrace();
 			}
 		}
 	}
 	
 	@FXML public void clearConsole()
 	{
-		taConsole.setText(">>> Console cleared, previous on going activity is cancelled...");
+		taConsole.setText(">>> Console cleared, previous on going activity is cancelled...\n>>> ");
 	}
 	
 	@FXML public void onConsoleClicked()
 	{
 		txtCommand.requestFocus();
-		
 	}
 	
 	@FXML public void apBaseFocus()
 	{
 		apBase.requestFocus();
-		
 	}
 	
 	@FXML public void setPreviousCommand()
@@ -345,7 +345,7 @@ public class Controller implements Initializable{
 		else if (previousCommand.size() == 0)
 		{
 			curCommandIndex--;
-			txtCommand.setText(previousCommand.get(curCommandIndex));
+			txtCommand.setText("");
 		}
 		else if (curCommandIndex >= previousCommand.size())
 		{
@@ -355,37 +355,100 @@ public class Controller implements Initializable{
 		System.out.println(curCommandIndex);
 	}
 	
+	
 	@FXML public void submitToRuntime()
 	{
 		Process proc = null;
 		String stdFromCMD, str = "";
-		try {
-			rt.exec("cmd.exe /c " + txtCommand.getText(), null, new File(""));
-		} catch (IOException e) { e.printStackTrace(); }
+		String tempCmd = txtCommand.getText().trim(), tempCons = taConsole.getText();
 		
-//		BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//		BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-		
-		taConsole.setText(taConsole.getText() + "\n>>> "+ txtCommand.getText());
 		setPreviousCommand();
+		taConsole.setText(taConsole.getText() + tempCmd);
+		
+		if (tempCmd.matches("^set .+"))
+		{
+			
+			if (tempCmd.matches("^set cwd .+"))
+			{
+				if (new File(tempCmd.substring(8)).isDirectory())
+				{
+					taConsole.setText(tempCons + "\ndirectory is valid and setted\n>>> ");
+					txtCwd.setText(tempCmd.substring(8));
+					isCwdValid();
+				} else
+				{
+					taConsole.setText(tempCons + "\ndirectory is invalid and not setted, if any, previously setted cwd will be current cwd\n>>> ");
+				}
+			}
+			else
+			{
+				taConsole.setText(taConsole.getText() + "\nthe option for \"set\" command : set cwd <directory>\ncwd is the directory(e.g : c:\\test)\n>>> ");
+				txtCommand.setText("");				
+			}
+			
+			
+		}
+		else if (tempCmd.matches("^help"))
+		{
+			String help = "help												: show list of description for all command.\n" +		
+						  "cwd <your directory here>						: set your current working directory.\n" +
+						  "compile [g|j] <your grammar or java file>		: compile your grammar file into java file or your java file into class, g and j for grammar and java file respectively.\n" +
+						  "show <your rule> [gui|tree] <your input file>	: show the tree or gui representation for your input according to the grammar.\n" +
+						  "clear											: clear the console\n\n" +
+						  "note that compile g and show command are exist just in case you haven't\n make the bat file either for Tool or TestRig.\n" +
+						  "if you already set the bat file, you can call compile g or show command  as the bat file name and still allowed to use\n" +
+						  "compile g and show command.\n>>> ";
+						
+			taConsole.setText(taConsole.getText() + "\n" + help);
+			
+		}
+		else if (tempCmd.matches("^clear"))
+		{
+			clearConsole();
+		}
+		else
+		{
+			System.out.println("error");
+			taConsole.setText(taConsole.getText() + "\nsorry, we don't understand what you said :(\n>>> ");
+		}
+//		else if ()
+//		{
+//			taConsole.setText(tempCons + "\n>>> " + tempCmd + "\nError: cwd must be specified, either on the textfield or console, and must be valid !\nFrom console you could type \"set cwd <your directory goes here>\"\ne.g: set cwd c:\\myfolder");
+//			setPreviousCommand();
+//			txtCommand.setText("");
+//			
+//		}
+//		else 
+//		{
+//			try {
+//				rt.exec("cmd.exe /c " + tempCmd, null, new File(cwd));
+//			} catch (IOException e) { e.printStackTrace(); }
+//			
+//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+//			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+//			
+//			taConsole.setText(taConsole.getText() + "\n>>> "+ tempCmd);
+//			setPreviousCommand();
+//			txtCommand.setText("");
+//			
+//			try {
+//				while ((stdFromCMD = stdInput.readLine()) != null)
+//				{
+//					str = stdFromCMD;
+//				}
+//				taConsole.setText(taConsole.getText() + "\n" + str);
+//			} catch (IOException e1) { e1.printStackTrace(); }
+//			
+//			try {
+//				while ((stdFromCMD = stdError.readLine()) != null)
+//				{
+//					str = stdFromCMD;
+//				}
+//				taConsole.setText(taConsole.getText() + "\n" + str);
+//			} catch (IOException e) { e.printStackTrace(); }
+//			
+//		}
 		txtCommand.setText("");
-		
-//		try {
-//			while ((stdFromCMD = stdInput.readLine()) != null)
-//			{
-//				str = stdFromCMD;
-//			}
-//			taConsole.setText(taConsole.getText() + "\n" + str);
-//		} catch (IOException e1) { e1.printStackTrace(); }
-//		
-//		try {
-//			while ((stdFromCMD = stdError.readLine()) != null)
-//			{
-//				str = stdFromCMD;
-//			}
-//			taConsole.setText(taConsole.getText() + "\n" + str);
-//		} catch (IOException e) { e.printStackTrace(); }
-		
 	}
 	
 	@FXML public void getAllStream()
