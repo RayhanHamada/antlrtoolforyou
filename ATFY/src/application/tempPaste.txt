@@ -1,0 +1,66 @@
+@FXML
+	public void compileGrammar()
+	{
+		cwd = txtCwd.getText();
+		grammarName = txtGrammar.getText();
+		inputName = txtInput.getText();
+		
+		File directory = new File(cwd);
+		
+		try {
+			
+			if (txtCwd.getText().trim().isEmpty() || txtGrammar.getText().trim().isEmpty() || txtInput.getText().trim().isEmpty() || !directory.isDirectory())
+			{
+				lblReport.setText("Error: Invalid Input");
+			} 
+			else
+			{
+				cwd = txtCwd.getText();
+				grammarName = txtGrammar.getText();
+				inputName = txtInput.getText();
+			
+			
+			rt.exec("cmd.exe /c antlr4 "+ cwd + "\\"+grammarName);
+			lblReport.setText("No Error Found :)");
+			}
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			lblReport.setText("Error: Invalid Input");
+		}
+	}
+	
+	@FXML
+	public void compileJavaFile()
+	{
+		try
+		{
+			rt.exec("cmd.exe /c javac " + cwd + "\\" + grammarName.substring(0, grammarName.length()-3) + "*.java");
+			lblReport.setText("No Error Found :)");
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			lblReport.setText("Error: Invalid Input");
+		}
+		
+	}
+
+&& FilenameUtils.getExtension(txtGrammar.getText()) == "g4"
+&& FilenameUtils.getExtension(txtInput.getText()) == "txt"	
+
+File pathInput = new File(txtCwd.getText() + "\\" + txtFileName.getText());
+		
+		if (pathInput.exists() && pathInput.isFile() && pathInput.getPath().matches(".+\\.txt$"))
+		{
+			filenametValidator.setText("Input is valid !");
+			dynamicValidator();
+			return true;
+		}
+		else
+		{
+			filenametValidator.setText("Input is invalid !");
+			dynamicValidator();
+			return false;
+		}

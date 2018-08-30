@@ -1,0 +1,38 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+.button
+{
+	-fx-background-color: #FF2B0A;
+	-fx-text-fill: white; 
+}
+
+.label
+{
+	-fx-text-fill: white;
+}
+
+
+#basepane
+{
+	-fx-background-color: #2B2B2B;
+}
+
+#taConsole
+{
+	-fx-control-inner-background: #050505;
+	-fx-border-width: 4;
+	-fx-border-color: #FF2B0A;
+}
+
+#hbConsole
+{
+	
+}
+
+#hbField
+{
+
+
+}
+
+
