@@ -86,5 +86,29 @@ try
 		}
 		
 		
+		else if (tempCmd.matches("^generate .+"))
+		{
+			File gram = new File(cwd + "\\" + tempCmd.substring(9));
+			
+			if (gram.exists() && gram.isFile() && gram.getPath().matches(".+\\.g4$") && isCwdSet)
+			{
+				taConsole.setText(taConsole.getText() + "\ngrammar is valid and generated.\n>>> ");
+				txtGrammar.setText(tempCmd.substring(9));
+				isGrammarValid();
+				isGrammarSet = true;
+				compileGrammar();
+				
+			} 
+			else
+			{
+				if (!isCwdSet)
+				{
+					taConsole.setText(taConsole.getText() + "\n cwd is not setted yet, please set it first.");
+				}
+				taConsole.setText(taConsole.getText() + "\ngrammar is invalid and not generated.\n>>> ");
+			}
+		}
+		
+		
 		
 		

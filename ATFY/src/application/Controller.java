@@ -8,11 +8,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import com.sun.xml.internal.bind.v2.model.impl.RuntimeModelBuilder;
-
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -20,6 +22,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+
 
 public class Controller implements Initializable{
 	
@@ -38,7 +42,8 @@ public class Controller implements Initializable{
 	@FXML private Button btnTree;
 	@FXML private Button btnSubmit;
 	@FXML private Button btnClear;
-
+	@FXML private Button btnSetting;
+	
 	@FXML private Label lblCWD;
 	@FXML private Label lblGrammarName;
 	@FXML private Label lblFileName;
@@ -74,6 +79,8 @@ public class Controller implements Initializable{
 				else if (event.getCode() == KeyCode.DOWN) getNextCommand();
 			}
 		});
+		
+		
 	}
 	
 	
@@ -308,7 +315,6 @@ public class Controller implements Initializable{
 			previousCommand.add(txtCommand.getText());
 			curCommandIndex++;
 		}
-		System.out.println(curCommandIndex);
 	}
 	
 	@FXML public void getPreviousCommand()
@@ -331,7 +337,6 @@ public class Controller implements Initializable{
 		{
 			txtCommand.setText(previousCommand.get(curCommandIndex));
 		}
-		System.out.println(curCommandIndex);
 	}
 	
 	@FXML public void getNextCommand()
@@ -352,7 +357,6 @@ public class Controller implements Initializable{
 			curCommandIndex--;
 			txtCommand.setText(previousCommand.get(curCommandIndex));
 		}
-		System.out.println(curCommandIndex);
 	}
 	
 	
@@ -362,99 +366,87 @@ public class Controller implements Initializable{
 		String stdFromCMD, str = "";
 		String tempCmd = txtCommand.getText().trim(), tempCons = taConsole.getText();
 		
+		taConsole.setText(tempCons + txtCommand.getText().trim());
 		setPreviousCommand();
-		taConsole.setText(taConsole.getText() + tempCmd);
 		
-		if (tempCmd.matches("^set .+"))
+		if (tempCmd.matches("^cwd .+"))
 		{
 			
-			if (tempCmd.matches("^set cwd .+"))
+			if (new File(tempCmd.substring(4)).isDirectory())
 			{
-				if (new File(tempCmd.substring(8)).isDirectory())
-				{
-					taConsole.setText(tempCons + "\ndirectory is valid and setted\n>>> ");
-					txtCwd.setText(tempCmd.substring(8));
-					isCwdValid();
-				} else
-				{
-					taConsole.setText(tempCons + "\ndirectory is invalid and not setted, if any, previously setted cwd will be current cwd\n>>> ");
-				}
-			}
-			else
+				taConsole.setText(tempCons + "\ndirectory is valid and setted.\n>>> ");
+				txtCwd.setText(tempCmd.substring(4));
+				isCwdValid();
+				isCwdSet = true;
+			} else
 			{
-				taConsole.setText(taConsole.getText() + "\nthe option for \"set\" command : set cwd <directory>\ncwd is the directory(e.g : c:\\test)\n>>> ");
-				txtCommand.setText("");				
+				taConsole.setText(tempCons + "\ndirectory is invalid and not setted, if any, previously setted cwd will be current cwd\n>>> ");
 			}
-			
 			
 		}
 		else if (tempCmd.matches("^help"))
 		{
 			String help = "help												: show list of description for all command.\n" +		
 						  "cwd <your directory here>						: set your current working directory.\n" +
-						  "compile [g|j] <your grammar or java file>		: compile your grammar file into java file or your java file into class, g and j for grammar and java file respectively.\n" +
+						  "javac <your grammar name without extension>*.java: compile your java file into class file.\n" +
 						  "show <your rule> [gui|tree] <your input file>	: show the tree or gui representation for your input according to the grammar.\n" +
 						  "clear											: clear the console\n\n" +
 						  "note that compile g and show command are exist just in case you haven't\n make the bat file either for Tool or TestRig.\n" +
 						  "if you already set the bat file, you can call compile g or show command  as the bat file name and still allowed to use\n" +
 						  "compile g and show command.\n>>> ";
 						
-			taConsole.setText(taConsole.getText() + "\n" + help);
-			
+			taConsole.setText(tempCons + "\n" + help);
 		}
 		else if (tempCmd.matches("^clear"))
 		{
 			clearConsole();
 		}
-		else
+		else 
 		{
-			System.out.println("error");
-			taConsole.setText(taConsole.getText() + "\nsorry, we don't understand what you said :(\n>>> ");
+			if (isCwdValid())
+			{
+				try {
+					proc = rt.exec("cmd.exe /c " + tempCmd, null, new File(cwd));
+				} catch (IOException e) { e.printStackTrace(); }
+				
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+				
+				try {
+					while ((stdFromCMD = stdInput.readLine()) != null)
+					{
+						str = stdFromCMD;
+					}
+					
+					if (str.trim() != "")
+					{
+						taConsole.setText(tempCons + txtCommand.getText().trim() +"\n" + str + "\n>>> ");						
+					}
+					
+					while ((stdFromCMD = stdError.readLine()) != null)
+					{
+						str = stdFromCMD;
+					}
+					
+					if (str.trim() != "")
+					{
+						taConsole.setText(tempCons + txtCommand.getText().trim() +"\n" + str + "\n>>> ");
+					}
+					
+					} catch (IOException e1) {
+					e1.printStackTrace();
+					}
+			}
+			else
+			{
+				taConsole.setText(tempCons + "\ndirectory is invalid, set your directory first before use this console.\n>>> ");
+			}
+			
 		}
-//		else if ()
-//		{
-//			taConsole.setText(tempCons + "\n>>> " + tempCmd + "\nError: cwd must be specified, either on the textfield or console, and must be valid !\nFrom console you could type \"set cwd <your directory goes here>\"\ne.g: set cwd c:\\myfolder");
-//			setPreviousCommand();
-//			txtCommand.setText("");
-//			
-//		}
-//		else 
-//		{
-//			try {
-//				rt.exec("cmd.exe /c " + tempCmd, null, new File(cwd));
-//			} catch (IOException e) { e.printStackTrace(); }
-//			
-//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//			BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-//			
-//			taConsole.setText(taConsole.getText() + "\n>>> "+ tempCmd);
-//			setPreviousCommand();
-//			txtCommand.setText("");
-//			
-//			try {
-//				while ((stdFromCMD = stdInput.readLine()) != null)
-//				{
-//					str = stdFromCMD;
-//				}
-//				taConsole.setText(taConsole.getText() + "\n" + str);
-//			} catch (IOException e1) { e1.printStackTrace(); }
-//			
-//			try {
-//				while ((stdFromCMD = stdError.readLine()) != null)
-//				{
-//					str = stdFromCMD;
-//				}
-//				taConsole.setText(taConsole.getText() + "\n" + str);
-//			} catch (IOException e) { e.printStackTrace(); }
-//			
-//		}
 		txtCommand.setText("");
 	}
 	
-	@FXML public void getAllStream()
-	{
-		
-	}
+	
 	
 	
 	
